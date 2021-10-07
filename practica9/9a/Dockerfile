@@ -8,6 +8,6 @@ COPY index.html .
 
 EXPOSE 80
 
-RUN chmod u=rw,g=r,o=r index.html
+RUN chmod u=rw,g=r,o=r *.html
 
 CMD ["mini_httpd", "-dd", "/var/www/html", "-D"]
