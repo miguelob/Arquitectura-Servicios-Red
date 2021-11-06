@@ -73,10 +73,10 @@ create_trigger() {
     echo "$(green_text "[+] Creating the trigger for repository and master branch..")"
     gcloud beta builds triggers create cloud-source-repositories \
     --repo=$repo_name \
-    --branch-pattern="^master$" \ # or --tag-pattern=TAG_PATTERN
+    --branch-pattern="^master$" \
     --build-config="cloudbuild-prod.yaml" \
-    --service-account=$project_name \
-    --name=$trigger_name
+    --name="$trigger_name" \
+    --service-account=$project_name
 }
 
 # 1. Creates the repository and push the code
