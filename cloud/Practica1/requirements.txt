@@ -1,3 +1,9 @@
-pyarrow
-pandas
+google-cloud
+google-cloud-core
+google-cloud-storage
 google-cloud-bigquery
+requests_toolbelt
+oauth2client
+requests
+pandas
+pyarrow

@@ -3,6 +3,18 @@
 source "${PWD}/config.ini"
 source "color.sh"
 
+
+delete_repository() {
+
+    #Deletes de remote repo and local folder
+    echo "$(green_text "[+] Deleting local folder:")"
+    sudo rm -r $repo_name
+
+    echo "$(green_text "[+] Deleting remote repository:") $repo_name ..."
+    gcloud init
+    gcloud source repos delete $repo_name
+}
+
 delete_bucket() {
 
     #deletes the bucket with the unique name from config.ini
@@ -36,16 +48,20 @@ delete_CloudFunction() {
     gcloud functions delete -q $CloudFunction_name --region $location
 }
 
-# 1. Deletes the bucket
+# 1. Delete de repository
+# https://cloud.google.com/source-repositories/docs/deleting-a-repository
+delete_repository
+
+# 2. Deletes the bucket
 # https://cloud.google.com/storage/docs/deleting-buckets#gsutil
 delete_bucket
 
-#2. Delete dataset and table for BigQuery
+# 3. Delete dataset and table for BigQuery
 # https://cloud.google.com/bigquery/docs/managing-datasets
 # https://cloud.google.com/bigquery/docs/managing-tables
 delete_dataSet
 delete_table
 
-#3. Delete Cloud Function
+# 4. Delete Cloud Function
 # https://cloud.google.com/sdk/gcloud/reference/functions/delete
 delete_CloudFunction

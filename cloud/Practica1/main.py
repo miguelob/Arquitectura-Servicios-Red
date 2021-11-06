@@ -1,58 +1,86 @@
-import datetime
+import os
 
+from google.cloud import storage
 from google.cloud import bigquery
-import pandas
-import pytz
+
+import pandas as pd
 
 
-def upload2BQ(arg1,arg2):
-    # Construct a BigQuery client object.
-    client = bigquery.Client()
+DATASET = "transactions"
+TABLE = "records"
+TABLE_ID = f"{DATASET}.{TABLE}"
 
-    # TODO(developer): Set table_id to the ID of the table to create.
-    table_id = "canvas-cursor-328109.transactions.records"
 
-    records = [
-        {
-            "userId": "TEST",
-            "transaction": 2983.4
-            
-        }
-    ]
-    dataframe = pandas.DataFrame(
-        records,
-        # In the loaded table, the column order reflects the order of the
-        # columns in the DataFrame.
-        columns=[
-            "userId",
-            "transaction",
-        ]
-    )
-    job_config = bigquery.LoadJobConfig(
-        # Specify a (partial) schema. All columns are always written to the
-        # table. The schema is used to assist in data type definitions.
-        schema=[
-            # Specify the type of columns whose type cannot be auto-detected. For
-            # example the "title" column uses pandas dtype "object", so its
-            # data type is ambiguous.
-            bigquery.SchemaField("userId", bigquery.enums.SqlTypeNames.STRING),
-            # Indexes are written if included in the schema by name.
-            bigquery.SchemaField("transaction", bigquery.enums.SqlTypeNames.FLOAT),
-        ],
-        # Optionally, set the write disposition. BigQuery appends loaded rows
-        # to an existing table by default, but with WRITE_TRUNCATE write
-        # disposition it replaces the table with the loaded data.
-        write_disposition="WRITE_APPEND",
-    )
+def download_blob_as_dataframe(
+        bucket_name,
+        source_blob_name,
+        destination_file_name="/tmp/transaction.csv"):
+    """Downloads a blob from a bucket and returns it as a DataFrame"""
 
-    job = client.load_table_from_dataframe(
-        dataframe, table_id, job_config=job_config
-    )  # Make an API request.
-    job.result()  # Wait for the job to complete.
+    storage_client = storage.Client()
 
-    table = client.get_table(table_id)  # Make an API request.
+    bucket = storage_client.bucket(bucket_name=bucket_name)
+
+    blob = bucket.get_blob(source_blob_name)
+    blob.download_to_filename(destination_file_name)
+
     print(
-        "Loaded {} rows and {} columns to {}".format(
-            table.num_rows, len(table.schema), table_id
-        )
+        f"Downloaded storage object {source_blob_name} "
+        f"from bucket {bucket_name} to local file {destination_file_name}."
     )
+
+    df = pd.read_csv(destination_file_name)
+
+    os.remove(destination_file_name)
+    return df
+
+
+def upload_to_bigquery(dataframe, destination_table_id):
+    """Uploads as dataframe into BigQuery"""
+
+    bq = bigquery.Client()
+    job_config = bigquery.LoadJobConfig(
+        schema=[
+            bigquery.SchemaField("ID", bigquery.enums.SqlTypeNames.STRING),
+            bigquery.SchemaField("AMOUNT", bigquery.enums.SqlTypeNames.FLOAT)
+        ],
+        write_disposition="WRITE_APPEND"
+    )
+
+    print(f"Data to be ingested:\n{dataframe}")
+
+    bq.load_table_from_dataframe(
+        dataframe=dataframe,
+        destination=destination_table_id,
+        job_config=job_config
+    )
+
+
+def ingest_transaction(event, context):
+    """The entrypoint of the Cloud Function"""
+    bucket_name = event["bucket"]
+    blob_name = event["name"]
+
+    print(f"[i] Bucket name: {bucket_name}")
+    print(f"[i] Filename storage path: {blob_name}")
+
+    df = download_blob_as_dataframe(
+        bucket_name=bucket_name,
+        source_blob_name=blob_name,
+    )
+
+    upload_to_bigquery(
+        dataframe=df,
+        destination_table_id=TABLE_ID
+    )
+
+
+if __name__ == "__main__":
+    # This is just for local testing purposes"
+
+    event = {
+        "bucket": "asr-cloud-test-01",
+        "name": "transaction.csv"
+    }
+
+    ingest_transaction(event, None)

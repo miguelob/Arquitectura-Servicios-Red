@@ -3,6 +3,28 @@
 source "${PWD}/config.ini"
 source "color.sh"
 
+create_repository() {
+
+    #Creates and upload code to the google repository
+
+    echo "$(green_text "[+] Auth to continue:")"
+    gcloud init
+
+    echo "$(green_text "[+] Creating repository:") $repo_name ..."
+    gcloud source repos create $repo_name
+
+    echo "$(green_text "[+] Cloning repository to local machine:") Cloning repo..."
+    gcloud source repos clone $repo_name --project=$project_name
+
+    echo "$(green_text "[+] Moving content to the remote cloned folder:") Moving files..."
+    cp *.* $repo_name
+    cd $repo_name
+
+    echo "$(green_text "[+] Uploading content to the remote repo:") Uploading content..."
+    git add .
+    git commit -m "init"
+    git push -u origin master
+}
 create_bucket() {
 
     #Creates the bucket with the unique name from config.ini
@@ -26,34 +48,40 @@ create_table() {
 
     echo "$(green_text "[+] Creating table:") $table_name ..."
     bq mk $dataSet_name.$table_name \
-    userId:STRING,transaction:FLOAT
+    ID:STRING,AMOUNT:FLOAT
 }
 
 create_CloudFunction() {
     
-    #Creates the trigger for the service
+    #Creates the cloud function for the service
 
     echo "$(green_text "[+] Creating the Cloud Function...")"
     gcloud functions deploy $CloudFunction_name \
-            --entry-point=upload2BQ \
+            --entry-point=ingest_transaction \
             --runtime=python39 \
             --region $location \
-            --memory 512MB \
+            --memory 256MB \
             --timeout 60s \
             --trigger-resource $bucket_name \
             --trigger-event google.storage.object.finalize
 }
-# 1. Create the bucket
+
+# 1. Creates the repository and push the code
+# https://cloud.google.com/source-repositories/docs/creating-an-empty-repository#gcloud
+# https://cloud.google.com/source-repositories/docs/creating-an-empty-repository#gcloud
+create_repository
+
+# 2. Create the bucket
 # https://cloud.google.com/storage/docs/creating-buckets?authuser=1#storage-create-bucket-gsutil
 create_bucket
 
-#2. Create dataset and table into BigQuery
+# 3. Create dataset and table into BigQuery
 # https://cloud.google.com/bigquery/docs/datasets#bq
 # https://cloud.google.com/bigquery/docs/tables
 create_dataSet
 create_table
 
-#3. Create trigger
+# 4. Create the cloud function
 # https://cloud.google.com/sdk/gcloud/reference/functions/deploy#--trigger-event
 # https://cloud.google.com/functions/docs/calling/storage#archive
 create_CloudFunction
