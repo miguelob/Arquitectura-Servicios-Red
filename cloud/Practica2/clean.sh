@@ -48,6 +48,15 @@ delete_CloudFunction() {
     gcloud functions delete -q $CloudFunction_name --region $location
 }
 
+delete_trigger() {
+
+    
+    #Deletes the trigger
+
+    echo "$(green_text "[+] Deleting Trigger...")"
+    gcloud beta builds triggers delete $trigger_name
+}
+
 # 1. Delete de repository
 # https://cloud.google.com/source-repositories/docs/deleting-a-repository
 delete_repository
@@ -65,3 +74,7 @@ delete_table
 # 4. Delete Cloud Function
 # https://cloud.google.com/sdk/gcloud/reference/functions/delete
 delete_CloudFunction
+
+# 5. Delete trigger
+# https://cloud.google.com/build/docs/automating-builds/create-manage-triggers
+delete_trigger

@@ -6,8 +6,8 @@ from google.cloud import bigquery
 import pandas as pd
 
 
-DATASET = "transactions-V2"
-TABLE = "records-V2"
+DATASET = "transactions"
+TABLE = "records"
 TABLE_ID = f"{DATASET}.{TABLE}"
 
 
