@@ -75,7 +75,7 @@ create_trigger() {
     --repo=$repo_name \
     --branch-pattern="^master$" \
     --build-config="cloudbuild-prod.yaml" \
-    --name="$trigger_name" \
+    --name=$trigger_name \
     --service-account=$project_name
 }
 

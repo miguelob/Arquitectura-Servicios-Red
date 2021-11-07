@@ -1,15 +1,16 @@
 steps:
   - name: 'gcr.io/cloud-builders/gcloud'
     args: [
-        'gcloud functions deploy bucket2BigQuery-V2 \
-        --entry-point=ingest_transaction \
-        --runtime=python39 \
-        --region us-central1 \
-        --memory 256MB \
-        --timeout 60s \
-        --trigger-resource asr-cloud-201706428-V2 \
-        --trigger-event google.storage.object.finalize'
+        'functions',
+        'deploy',
+        'bucket2BigQuery2',
+        '--entry-point=ingest_transaction',
+        '--runtime=python39',
+        '--region=us-central1',
+        '--memory=256MB',
+        '--timeout=60s',
+        '--trigger-resource=asr-cloud-201706428-Practica2',
+        '--trigger-event=google.storage.object.finalize'
     ]
     id: 'deploy: app'
-
 timeout: 3600s
