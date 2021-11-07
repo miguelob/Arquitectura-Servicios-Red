@@ -3,7 +3,7 @@ steps:
     args: [
         'functions',
         'deploy',
-        'bucket2BigQuery2',
+        'bucket2BigQuery-Practica2',
         '--entry-point=ingest_transaction',
         '--runtime=python39',
         '--region=us-central1',
