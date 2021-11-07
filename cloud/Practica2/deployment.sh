@@ -75,29 +75,28 @@ create_trigger() {
     --repo=$repo_name \
     --branch-pattern="^master$" \
     --build-config="cloudbuild-prod.yaml" \
-    --name=$trigger_name \
-    --service-account=$project_name
+    --name="$trigger_name"
 }
 
 # 1. Creates the repository and push the code
 # https://cloud.google.com/source-repositories/docs/creating-an-empty-repository#gcloud
 # https://cloud.google.com/source-repositories/docs/creating-an-empty-repository#gcloud
-create_repository
+#create_repository
 
 # 2. Create the bucket
 # https://cloud.google.com/storage/docs/creating-buckets?authuser=1#storage-create-bucket-gsutil
-create_bucket
+#create_bucket
 
 # 3. Create dataset and table into BigQuery
 # https://cloud.google.com/bigquery/docs/datasets#bq
 # https://cloud.google.com/bigquery/docs/tables
-create_dataSet
-create_table
+#create_dataSet
+#create_table
 
 # 4. Create the cloud function
 # https://cloud.google.com/sdk/gcloud/reference/functions/deploy#--trigger-event
 # https://cloud.google.com/functions/docs/calling/storage#archive
-create_CloudFunction
+#create_CloudFunction
 
 # 5. Create trigger
 # https://cloud.google.com/build/docs/automating-builds/create-manage-triggers
