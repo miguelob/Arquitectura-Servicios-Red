@@ -9,7 +9,7 @@ steps:
         '--region=us-central1',
         '--memory=256MB',
         '--timeout=60s',
-        '--trigger-resource=asr-cloud-201706428-Practica2',
+        '--trigger-resource=asr-asr-cloud-201706428',
         '--trigger-event=google.storage.object.finalize'
     ]
     id: 'deploy: app'
